@@ -1,5 +1,5 @@
 import { createReducer } from '@reduxjs/toolkit';
-import { fetchOfferAction, fetchNearbyOffersAction, fetchReviewsAction, postReviewAction } from '../thunk';
+import { fetchOfferAction, fetchNearbyOffersAction, fetchReviewsAction, postReviewAction, toggleFavoriteAction } from '../thunk';
 import type { Offer } from '../../types/offer';
 import type { Review } from '../../types/review';
 
@@ -47,6 +47,15 @@ export const propertyReducer = createReducer(initialState, (builder) => {
     })
     .addCase(postReviewAction.rejected, (state) => {
       state.isReviewPosting = false;
+    })
+    .addCase(toggleFavoriteAction.fulfilled, (state, action) => {
+      if (state.currentOffer?.id === action.payload.id) {
+        state.currentOffer = action.payload;
+      }
+      const nearbyIndex = state.nearbyOffers.findIndex((offer) => offer.id === action.payload.id);
+      if (nearbyIndex !== -1) {
+        state.nearbyOffers[nearbyIndex] = action.payload;
+      }
     });
 });
 

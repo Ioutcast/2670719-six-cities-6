@@ -6,6 +6,7 @@ import Map from '../map/map';
 import CitiesList from '../cities-list/cities-list';
 import SortOptions from '../sort-options/sort-options';
 import Spinner from '../spinner/spinner';
+import MainEmptyPage from '../main-empty-page/main-empty-page';
 import {
   selectIsLoading,
   selectSortedOffers,
@@ -40,6 +41,10 @@ function MainPage(): JSX.Element {
         <Spinner />
       </div>
     );
+  }
+
+  if (offers.length === 0) {
+    return <MainEmptyPage />;
   }
 
   return (

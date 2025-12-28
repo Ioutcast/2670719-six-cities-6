@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Link, useParams, Navigate } from 'react-router-dom';
+import { useEffect, useCallback } from 'react';
+import { Link, useParams, Navigate, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import ReviewForm from '../review-form/review-form';
 import ReviewsList from '../reviews-list/reviews-list';
@@ -7,7 +7,7 @@ import Map from '../map/map';
 import NearbyOffersList from '../nearby-offers-list/nearby-offers-list';
 import Spinner from '../spinner/spinner';
 import { AppDispatch } from '../../store';
-import { fetchOfferAction, fetchNearbyOffersAction, fetchReviewsAction } from '../../store/thunk';
+import { fetchOfferAction, fetchNearbyOffersAction, fetchReviewsAction, toggleFavoriteAction } from '../../store/thunk';
 import {
   selectCurrentOffer,
   selectNearbyOffers,
@@ -19,11 +19,22 @@ import {
 function PropertyPage(): JSX.Element {
   const { id } = useParams();
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const currentOffer = useSelector(selectCurrentOffer);
   const nearbyOffers = useSelector(selectNearbyOffers);
   const reviews = useSelector(selectReviews);
   const isOfferLoading = useSelector(selectIsOfferLoading);
   const authorizationStatus = useSelector(selectAuthorizationStatus);
+
+  const handleFavoriteClick = useCallback(() => {
+    if (authorizationStatus !== 'AUTH') {
+      navigate('/login');
+      return;
+    }
+    if (currentOffer) {
+      dispatch(toggleFavoriteAction({ offerId: currentOffer.id, isFavorite: !currentOffer.isFavorite }));
+    }
+  }, [authorizationStatus, currentOffer, dispatch, navigate]);
 
   useEffect(() => {
     if (id) {
@@ -100,7 +111,11 @@ function PropertyPage(): JSX.Element {
                 <h1 className="property__name">
                   {currentOffer.title}
                 </h1>
-                <button className={`property__bookmark-button ${currentOffer.isFavorite ? 'property__bookmark-button--active' : ''} button`} type="button">
+                <button
+                  className={`property__bookmark-button ${currentOffer.isFavorite ? 'property__bookmark-button--active' : ''} button`}
+                  type="button"
+                  onClick={handleFavoriteClick}
+                >
                   <svg className="property__bookmark-icon" width="31" height="33">
                     <use xlinkHref="#icon-bookmark"></use>
                   </svg>

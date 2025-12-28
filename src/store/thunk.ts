@@ -131,3 +131,36 @@ export const postReviewAction = createAsyncThunk<
   }
 );
 
+export const toggleFavoriteAction = createAsyncThunk<
+  Offer,
+  { offerId: string; isFavorite: boolean },
+  {
+    extra: AxiosInstance;
+    rejectValue: void;
+  }
+>(
+  'offers/toggleFavorite',
+  async ({ offerId, isFavorite }, { extra: api, rejectWithValue }) => {
+    try {
+      const { data } = await api.post<Offer>(`/favorite/${offerId}/${isFavorite ? 1 : 0}`);
+      return data;
+    } catch {
+      return rejectWithValue(undefined);
+    }
+  }
+);
+
+export const fetchFavoriteOffersAction = createAsyncThunk<
+  Offer[],
+  undefined,
+  {
+    extra: AxiosInstance;
+  }
+>(
+  'offers/fetchFavorites',
+  async (_arg, { extra: api }) => {
+    const { data } = await api.get<Offer[]>('/favorite');
+    return data;
+  }
+);
+
