@@ -22,7 +22,7 @@ describe('PropertyNotLoggedPage', () => {
 
   it('should render property amenities', () => {
     render(<PropertyNotLoggedPage />);
-    expect(screen.getByText("What's inside")).toBeInTheDocument();
+    expect(screen.getByText('What\'s inside')).toBeInTheDocument();
     expect(screen.getByText('Wi-Fi')).toBeInTheDocument();
     expect(screen.getByText('Washing machine')).toBeInTheDocument();
   });

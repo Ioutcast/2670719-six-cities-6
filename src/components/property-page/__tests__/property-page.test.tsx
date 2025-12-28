@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter, MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import PropertyPage from '../property-page';
@@ -252,7 +252,7 @@ describe('PropertyPage', () => {
       </Provider>
     );
     expect(dispatchSpy).toHaveBeenCalled();
-    const callTypes = dispatchSpy.mock.calls.map((call) => call[0].type);
+    const callTypes = dispatchSpy.mock.calls.map((call) => (call[0] as { type: string }).type);
     expect(callTypes).toContain('data/fetchOffer/pending');
     expect(callTypes).toContain('data/fetchNearbyOffers/pending');
     expect(callTypes).toContain('data/fetchReviews/pending');
@@ -288,7 +288,7 @@ describe('PropertyPage', () => {
     const favoriteButton = screen.getByRole('button', { name: /To bookmarks/i });
     await user.click(favoriteButton);
     await waitFor(() => {
-      const callTypes = dispatchSpy.mock.calls.map((call) => call[0].type);
+      const callTypes = dispatchSpy.mock.calls.map((call) => (call[0] as { type: string }).type);
       expect(callTypes).toContain('offers/toggleFavorite/pending');
     });
   });

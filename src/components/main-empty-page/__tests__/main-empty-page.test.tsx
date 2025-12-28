@@ -8,6 +8,7 @@ import { offersReducer } from '../../../store/slices/offers-slice';
 import { userReducer } from '../../../store/slices/user-slice';
 import { propertyReducer } from '../../../store/slices/property-slice';
 import { favoritesReducer } from '../../../store/slices/favorites-slice';
+import type { Offer } from '../../../types/offer';
 
 const createMockStore = (authorizationStatus: string = 'NO_AUTH', city: string = 'Paris', favoriteCount: number = 0) => configureStore({
   reducer: {
@@ -28,7 +29,7 @@ const createMockStore = (authorizationStatus: string = 'NO_AUTH', city: string =
       user: authorizationStatus === 'AUTH' ? { email: 'test@test.com' } : null,
     },
     favorites: {
-      favoriteOffers: Array(favoriteCount).fill(null),
+      favoriteOffers: Array(favoriteCount).fill(null) as unknown as Offer[],
     },
   },
 });

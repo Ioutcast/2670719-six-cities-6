@@ -73,7 +73,7 @@ describe('SortOptions', () => {
       await user.click(sortingType);
     }
     const priceOptions = screen.getAllByText('Price: low to high');
-    const priceOption = priceOptions.find(el => el.tagName === 'LI');
+    const priceOption = priceOptions.find((el) => el.tagName === 'LI');
     if (priceOption) {
       await user.click(priceOption);
     }
@@ -98,7 +98,7 @@ describe('SortOptions', () => {
       await user.click(sortingType);
     }
     const activeOptions = screen.getAllByText('Top rated first');
-    const activeOption = activeOptions.find(el => el.tagName === 'LI');
+    const activeOption = activeOptions.find((el) => el.tagName === 'LI');
     expect(activeOption).toHaveClass('places__option--active');
   });
 
@@ -116,9 +116,9 @@ describe('SortOptions', () => {
     }
     const optionsList = container.querySelector('.places__options');
     expect(optionsList).toHaveClass('places__options--opened');
-    
+
     const popularOptions = screen.getAllByText('Popular');
-    const popularOption = popularOptions.find(el => el.tagName === 'LI');
+    const popularOption = popularOptions.find((el) => el.tagName === 'LI');
     if (popularOption) {
       await user.click(popularOption);
     }
@@ -135,14 +135,14 @@ describe('SortOptions', () => {
     );
     const sortingType = container.querySelector('.places__sorting-type');
     const optionsList = container.querySelector('.places__options');
-    
+
     if (sortingType) {
       await user.click(sortingType);
       expect(optionsList).toHaveClass('places__options--opened');
-      
+
       await user.click(sortingType);
       expect(optionsList).not.toHaveClass('places__options--opened');
-      
+
       await user.click(sortingType);
       expect(optionsList).toHaveClass('places__options--opened');
     }

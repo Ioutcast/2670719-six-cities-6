@@ -93,9 +93,9 @@ describe('LoginPage', () => {
     expect(dispatchSpy).toHaveBeenCalled();
     // Check that loginAction was dispatched (it's a thunk, so we check the function was called)
     const calls = dispatchSpy.mock.calls;
-    const loginCall = calls.find(call => 
-      typeof call[0] === 'function' || 
-      (call[0] && 'type' in call[0] && call[0].type?.includes('login'))
+    const loginCall = calls.find((call) =>
+      typeof call[0] === 'function' ||
+      (call[0] && 'type' in call[0] && String(call[0].type)?.includes('login'))
     );
     expect(loginCall).toBeDefined();
   });
@@ -180,9 +180,9 @@ describe('LoginPage', () => {
     expect(dispatchSpy).toHaveBeenCalled();
     // Check that loginAction was dispatched with trimmed email
     const calls = dispatchSpy.mock.calls;
-    const loginCall = calls.find(call => 
-      typeof call[0] === 'function' || 
-      (call[0] && 'type' in call[0] && call[0].type?.includes('login'))
+    const loginCall = calls.find((call) =>
+      typeof call[0] === 'function' ||
+      (call[0] && 'type' in call[0] && String(call[0].type)?.includes('login'))
     );
     expect(loginCall).toBeDefined();
   });
