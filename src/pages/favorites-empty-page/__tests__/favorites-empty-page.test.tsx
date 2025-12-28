@@ -10,9 +10,10 @@ describe('FavoritesEmptyPage', () => {
   });
 
   it('should render header with logo', () => {
-    render(<FavoritesEmptyPage />);
-    const logo = screen.getByAltText('6 cities logo');
+    const { container } = render(<FavoritesEmptyPage />);
+    const logo = container.querySelector('.header__logo');
     expect(logo).toBeInTheDocument();
+    expect(logo).toHaveAttribute('alt', '6 cities logo');
   });
 
   it('should render footer with logo', () => {

@@ -71,7 +71,6 @@ const createMockStore = (
   const mockMiddleware: Middleware = () => (next) => (action) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (action.type === 'offers/fetchFavorites/pending' && storeRef) {
-      // Immediately dispatch fulfilled with preloaded data
       setTimeout(() => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         storeRef!.dispatch(fetchFavoriteOffersAction.fulfilled(favoriteOffers, '', undefined));
