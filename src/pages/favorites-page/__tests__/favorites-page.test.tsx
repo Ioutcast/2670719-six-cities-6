@@ -1,14 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, type Middleware } from '@reduxjs/toolkit';
 import FavoritesPage from '../favorites-page';
 import { offersReducer } from '../../../store/slices/offers-slice';
 import { userReducer } from '../../../store/slices/user-slice';
 import { propertyReducer } from '../../../store/slices/property-slice';
 import { favoritesReducer } from '../../../store/slices/favorites-slice';
+import { fetchFavoriteOffersAction } from '../../../store/thunk';
 import type { Offer } from '../../../types/offer';
 
 const mockOffer1: Offer = {
@@ -63,24 +64,54 @@ const createMockStore = (
   authorizationStatus: string = 'AUTH',
   favoriteOffers: Offer[] = [],
   isLoading: boolean = false
-) => configureStore({
-  reducer: {
-    offers: offersReducer,
-    user: userReducer,
-    property: propertyReducer,
-    favorites: favoritesReducer,
-  },
-  preloadedState: {
-    user: {
-      authorizationStatus,
-      user: authorizationStatus === 'AUTH' ? { email: 'test@test.com' } : null,
+) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let storeRef: ReturnType<typeof configureStore> | null = null;
+
+  const mockMiddleware: Middleware = () => (next) => (action) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (action.type === 'offers/fetchFavorites/pending' && storeRef) {
+      // Immediately dispatch fulfilled with preloaded data
+      setTimeout(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        storeRef!.dispatch(fetchFavoriteOffersAction.fulfilled(favoriteOffers, '', undefined));
+      }, 0);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return next(action);
+  };
+
+  const store = configureStore({
+    reducer: {
+      offers: offersReducer,
+      user: userReducer,
+      property: propertyReducer,
+      favorites: favoritesReducer,
     },
-    favorites: {
-      favoriteOffers,
-      isLoading,
+    preloadedState: {
+      user: {
+        authorizationStatus,
+        user: authorizationStatus === 'AUTH' ? { email: 'test@test.com' } : null,
+      },
+      favorites: {
+        favoriteOffers,
+        isLoading,
+      },
     },
-  },
-});
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({
+        thunk: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+          extraArgument: {} as any,
+        },
+      }).concat(mockMiddleware),
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return
+  storeRef = store;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return store;
+};
 
 describe('FavoritesPage', () => {
   beforeEach(() => {
@@ -100,7 +131,7 @@ describe('FavoritesPage', () => {
     expect(spinner).toBeInTheDocument();
   });
 
-  it('should render empty state when no favorites', () => {
+  it('should render empty state when no favorites', async () => {
     const store = createMockStore('AUTH', [], false);
     render(
       <Provider store={store}>
@@ -109,11 +140,13 @@ describe('FavoritesPage', () => {
         </BrowserRouter>
       </Provider>
     );
-    expect(screen.getByText('Nothing yet saved.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Nothing yet saved.')).toBeInTheDocument();
+    });
     expect(screen.getByText(/Save properties to narrow down search or plan your future trips/i)).toBeInTheDocument();
   });
 
-  it('should render favorites grouped by city', () => {
+  it('should render favorites grouped by city', async () => {
     const store = createMockStore('AUTH', [mockOffer1, mockOffer2, mockOffer3], false);
     render(
       <Provider store={store}>
@@ -122,7 +155,9 @@ describe('FavoritesPage', () => {
         </BrowserRouter>
       </Provider>
     );
-    expect(screen.getByText('Saved listing')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Saved listing')).toBeInTheDocument();
+    });
     expect(screen.getByText('Paris')).toBeInTheDocument();
     expect(screen.getByText('Cologne')).toBeInTheDocument();
     expect(screen.getByText('Test Offer 1')).toBeInTheDocument();
@@ -130,7 +165,7 @@ describe('FavoritesPage', () => {
     expect(screen.getByText('Test Offer 3')).toBeInTheDocument();
   });
 
-  it('should display user email and favorite count', () => {
+  it('should display user email and favorite count', async () => {
     const store = createMockStore('AUTH', [mockOffer1, mockOffer2], false);
     render(
       <Provider store={store}>
@@ -139,7 +174,9 @@ describe('FavoritesPage', () => {
         </BrowserRouter>
       </Provider>
     );
-    expect(screen.getByText('test@test.com')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('test@test.com')).toBeInTheDocument();
+    });
     const favoriteCount = screen.getByText('2');
     expect(favoriteCount).toBeInTheDocument();
   });
@@ -155,6 +192,9 @@ describe('FavoritesPage', () => {
         </BrowserRouter>
       </Provider>
     );
+    await waitFor(() => {
+      expect(screen.getByText('Test Offer 1')).toBeInTheDocument();
+    });
     const favoriteButton = screen.getAllByRole('button', { name: /In bookmarks/i })[0];
     await user.click(favoriteButton);
     expect(dispatchSpy).toHaveBeenCalled();
@@ -193,7 +233,7 @@ describe('FavoritesPage', () => {
     expect(fetchCalls.length).toBe(0);
   });
 
-  it('should render premium badge for premium offers', () => {
+  it('should render premium badge for premium offers', async () => {
     const store = createMockStore('AUTH', [mockOffer2], false);
     render(
       <Provider store={store}>
@@ -202,10 +242,12 @@ describe('FavoritesPage', () => {
         </BrowserRouter>
       </Provider>
     );
-    expect(screen.getByText('Premium')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Premium')).toBeInTheDocument();
+    });
   });
 
-  it('should render links to offer pages', () => {
+  it('should render links to offer pages', async () => {
     const store = createMockStore('AUTH', [mockOffer1], false);
     render(
       <Provider store={store}>
@@ -214,6 +256,9 @@ describe('FavoritesPage', () => {
         </BrowserRouter>
       </Provider>
     );
+    await waitFor(() => {
+      expect(screen.getByText('Test Offer 1')).toBeInTheDocument();
+    });
     const offerLink = screen.getByText('Test Offer 1').closest('a');
     expect(offerLink).toHaveAttribute('href', '/offer/1');
   });
