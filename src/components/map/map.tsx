@@ -63,7 +63,9 @@ function Map({city, offers, selectedOfferId}: MapProps): JSX.Element {
   useEffect(() => {
     if (map.current) {
       markersRef.current.forEach((marker) => {
-        marker.remove();
+        if (marker) {
+          marker.remove();
+        }
       });
       markersRef.current = [];
 

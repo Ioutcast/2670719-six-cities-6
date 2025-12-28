@@ -2,32 +2,38 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from '@testing-library/react';
 import Map from '../map';
 import type { Offer } from '../../../types/offer';
+import leaflet from 'leaflet';
 
 // Mock leaflet
-const mockMap = {
-  setView: vi.fn(),
-  remove: vi.fn(),
-};
+vi.mock('leaflet', () => {
+  const mockMapInstance = {
+    setView: vi.fn(),
+    remove: vi.fn(),
+  };
 
-const mockMarker = {
-  remove: vi.fn(),
-  addTo: vi.fn(),
-};
-// eslint-disable-next-line @typescript-eslint/no-use-before-define
-mockMarker.addTo = vi.fn().mockReturnValue(mockMarker);
+  const mockMarkerInstance = {
+    remove: vi.fn(),
+    addTo: vi.fn().mockReturnThis(),
+  };
 
-const mockTileLayer = {
-  addTo: vi.fn().mockReturnThis(),
-};
+  const mockTileLayerInstance = {
+    addTo: vi.fn().mockReturnThis(),
+  };
 
-vi.mock('leaflet', () => ({
-  default: {
-    map: vi.fn().mockReturnValue(mockMap),
-    marker: vi.fn().mockReturnValue(mockMarker),
-    icon: vi.fn().mockReturnValue({}),
-    tileLayer: vi.fn().mockReturnValue(mockTileLayer),
-  },
-}));
+  const mockMapFn = vi.fn(() => mockMapInstance);
+  const mockMarkerFn = vi.fn(() => mockMarkerInstance);
+  const mockIconFn = vi.fn(() => ({}));
+  const mockTileLayerFn = vi.fn(() => mockTileLayerInstance);
+
+  return {
+    default: {
+      map: mockMapFn,
+      marker: mockMarkerFn,
+      icon: mockIconFn,
+      tileLayer: mockTileLayerFn,
+    },
+  };
+});
 
 const mockCity: Offer['city'] = {
   name: 'Paris',
@@ -90,62 +96,51 @@ describe('Map', () => {
   });
 
   it('should initialize map with city location', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-    const leaflet = require('leaflet') as { default: { map: ReturnType<typeof vi.fn> } };
     render(
       <Map city={mockCity} offers={[]} />
     );
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(leaflet.default.map).toHaveBeenCalled();
+    const mockedLeaflet = vi.mocked(leaflet);
+    expect(mockedLeaflet.map).toHaveBeenCalled();
   });
 
   it('should create markers for offers', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-    const leaflet = require('leaflet') as { default: { marker: ReturnType<typeof vi.fn> } };
     render(
       <Map city={mockCity} offers={[mockOffer1, mockOffer2]} />
     );
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(leaflet.default.marker).toHaveBeenCalledTimes(2);
+    const mockedLeaflet = vi.mocked(leaflet);
+    expect(mockedLeaflet.marker).toHaveBeenCalledTimes(2);
   });
 
   it('should use active icon for selected offer', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-    const leaflet = require('leaflet') as { default: { marker: ReturnType<typeof vi.fn> } };
     render(
       <Map city={mockCity} offers={[mockOffer1, mockOffer2]} selectedOfferId="1" />
     );
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(leaflet.default.marker).toHaveBeenCalled();
+    const mockedLeaflet = vi.mocked(leaflet);
+    expect(mockedLeaflet.marker).toHaveBeenCalled();
   });
 
   it('should update markers when offers change', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-    const leaflet = require('leaflet') as { default: { marker: ReturnType<typeof vi.fn> } };
     vi.clearAllMocks();
     const { rerender } = render(
       <Map city={mockCity} offers={[mockOffer1]} />
     );
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(leaflet.default.marker).toHaveBeenCalledTimes(1);
+    const mockedLeaflet = vi.mocked(leaflet);
+    expect(mockedLeaflet.marker).toHaveBeenCalledTimes(1);
     rerender(
       <Map city={mockCity} offers={[mockOffer1, mockOffer2]} />
     );
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(leaflet.default.marker).toHaveBeenCalled();
+    expect(mockedLeaflet.marker).toHaveBeenCalled();
   });
 
   it('should update markers when selectedOfferId changes', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-    const leaflet = require('leaflet') as { default: { marker: ReturnType<typeof vi.fn> } };
     const { rerender } = render(
       <Map city={mockCity} offers={[mockOffer1, mockOffer2]} selectedOfferId="1" />
     );
     rerender(
       <Map city={mockCity} offers={[mockOffer1, mockOffer2]} selectedOfferId="2" />
     );
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(leaflet.default.marker).toHaveBeenCalled();
+    const mockedLeaflet = vi.mocked(leaflet);
+    expect(mockedLeaflet.marker).toHaveBeenCalled();
   });
 
   it('should cleanup map on unmount', () => {
@@ -153,7 +148,9 @@ describe('Map', () => {
       <Map city={mockCity} offers={[]} />
     );
     unmount();
-    expect(mockMap.remove).toHaveBeenCalled();
+    const mockedLeaflet = vi.mocked(leaflet);
+    const mapInstance = mockedLeaflet.map.mock.results[0]?.value;
+    expect(mapInstance?.remove).toHaveBeenCalled();
   });
 });
 
