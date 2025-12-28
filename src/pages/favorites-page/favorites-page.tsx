@@ -5,7 +5,7 @@ import { fetchFavoriteOffersAction, toggleFavoriteAction } from '../../store/thu
 import { AppDispatch } from '../../store';
 import { selectFavoriteOffers, selectIsFavoritesLoading, selectAuthorizationStatus, selectUser } from '../../store/selectors';
 import type { Offer } from '../../types/offer';
-import Spinner from '../spinner/spinner';
+import Spinner from '../../components/spinner/spinner';
 import { RATING_WIDTH_MULTIPLIER } from '../../constants/constants';
 
 function FavoritesPage(): JSX.Element {

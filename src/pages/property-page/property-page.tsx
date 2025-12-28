@@ -1,11 +1,11 @@
 import { useEffect, useCallback } from 'react';
 import { Link, useParams, Navigate, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import ReviewForm from '../review-form/review-form';
-import ReviewsList from '../reviews-list/reviews-list';
-import Map from '../map/map';
-import NearbyOffersList from '../nearby-offers-list/nearby-offers-list';
-import Spinner from '../spinner/spinner';
+import ReviewForm from '../../components/review-form/review-form';
+import ReviewsList from '../../components/reviews-list/reviews-list';
+import Map from '../../components/map/map';
+import NearbyOffersList from '../../components/nearby-offers-list/nearby-offers-list';
+import Spinner from '../../components/spinner/spinner';
 import { AppDispatch } from '../../store';
 import { fetchOfferAction, fetchNearbyOffersAction, fetchReviewsAction, toggleFavoriteAction } from '../../store/thunk';
 import {
