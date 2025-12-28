@@ -1,19 +1,44 @@
+import { useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchFavoriteOffersAction, toggleFavoriteAction } from '../../store/thunk';
+import { AppDispatch } from '../../store';
+import { selectFavoriteOffers, selectIsFavoritesLoading, selectAuthorizationStatus, selectUser } from '../../store/selectors';
 import type { Offer } from '../../types/offer';
+import Spinner from '../spinner/spinner';
 
-type FavoritesPageProps = {
-  offers: Offer[];
-}
+function FavoritesPage(): JSX.Element {
+  const dispatch = useDispatch<AppDispatch>();
+  const offers = useSelector(selectFavoriteOffers);
+  const isLoading = useSelector(selectIsFavoritesLoading);
+  const authorizationStatus = useSelector(selectAuthorizationStatus);
+  const user = useSelector(selectUser);
 
-function FavoritesPage({offers}: FavoritesPageProps): JSX.Element {
-  const offersByCity = offers.reduce((acc, offer) => {
+  useEffect(() => {
+    if (authorizationStatus === 'AUTH') {
+      dispatch(fetchFavoriteOffersAction());
+    }
+  }, [authorizationStatus, dispatch]);
+
+  const handleFavoriteClick = useCallback((offerId: string, isFavorite: boolean) => {
+    dispatch(toggleFavoriteAction({ offerId, isFavorite }));
+  }, [dispatch]);
+  if (isLoading) {
+    return (
+      <div className="page">
+        <Spinner />
+      </div>
+    );
+  }
+
+  const offersByCity = offers.reduce((acc: Record<string, Offer[]>, offer: Offer) => {
     const cityName = offer.city.name;
     if (!acc[cityName]) {
       acc[cityName] = [];
     }
     acc[cityName].push(offer);
     return acc;
-  }, {} as Record<string, Offer[]>);
+  }, {});
 
   return (
     <div className="page">
@@ -28,12 +53,12 @@ function FavoritesPage({offers}: FavoritesPageProps): JSX.Element {
             <nav className="header__nav">
               <ul className="header__nav-list">
                 <li className="header__nav-item user">
-                  <a className="header__nav-link header__nav-link--profile" href="#">
+                  <Link className="header__nav-link header__nav-link--profile" to="/favorites">
                     <div className="header__avatar-wrapper user__avatar-wrapper">
                     </div>
-                    <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
-                    <span className="header__favorite-count">3</span>
-                  </a>
+                    <span className="header__user-name user__name">{user?.email}</span>
+                    <span className="header__favorite-count">{offers.length}</span>
+                  </Link>
                 </li>
                 <li className="header__nav-item">
                   <a className="header__nav-link" href="#">
@@ -85,7 +110,11 @@ function FavoritesPage({offers}: FavoritesPageProps): JSX.Element {
                                 <b className="place-card__price-value">&euro;{offer.price}</b>
                                 <span className="place-card__price-text">&#47;&nbsp;night</span>
                               </div>
-                              <button className="place-card__bookmark-button place-card__bookmark-button--active button" type="button">
+                              <button
+                                className="place-card__bookmark-button place-card__bookmark-button--active button"
+                                type="button"
+                                onClick={() => handleFavoriteClick(offer.id, false)}
+                              >
                                 <svg className="place-card__bookmark-icon" width="18" height="19">
                                   <use xlinkHref="#icon-bookmark"></use>
                                 </svg>

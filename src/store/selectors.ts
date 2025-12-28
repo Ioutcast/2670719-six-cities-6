@@ -26,10 +26,8 @@ export const selectSortedOffers = createSelector(
   (filteredOffers, sorting) => sortOffers(filteredOffers, sorting)
 );
 
-export const selectFavoriteOffers = createSelector(
-  [selectAllOffers],
-  (offers) => offers.filter((offer) => offer.isFavorite)
-);
+export const selectFavoriteOffers = (state: RootState) => state.favorites.favoriteOffers;
+export const selectIsFavoritesLoading = (state: RootState) => state.favorites.isLoading;
 
 export const selectCityFromOffers = createSelector(
   [selectSortedOffers, selectFilteredOffers, selectCity],

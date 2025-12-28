@@ -1,6 +1,6 @@
 import { createReducer } from '@reduxjs/toolkit';
 import { changeCity, changeSorting } from '../action';
-import { fetchOffersAction } from '../thunk';
+import { fetchOffersAction, toggleFavoriteAction } from '../thunk';
 import type { Offer } from '../../types/offer';
 
 type OffersState = {
@@ -34,6 +34,12 @@ export const offersReducer = createReducer(initialState, (builder) => {
     })
     .addCase(fetchOffersAction.rejected, (state) => {
       state.isLoading = false;
+    })
+    .addCase(toggleFavoriteAction.fulfilled, (state, action) => {
+      const index = state.offers.findIndex((offer) => offer.id === action.payload.id);
+      if (index !== -1) {
+        state.offers[index] = action.payload;
+      }
     });
 });
 
