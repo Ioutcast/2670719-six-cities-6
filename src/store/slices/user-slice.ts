@@ -1,6 +1,6 @@
 import { createReducer } from '@reduxjs/toolkit';
-import { requireAuthorization } from '../action';
-import { checkAuthAction, loginAction } from '../thunk';
+import { requireAuthorization, logoutAction } from '../action';
+import { checkAuthAction, loginAction } from '../thunk/thunk';
 
 type UserState = {
   authorizationStatus: string;
@@ -34,6 +34,11 @@ export const userReducer = createReducer(initialState, (builder) => {
     .addCase(loginAction.rejected, (state) => {
       state.authorizationStatus = 'NO_AUTH';
       state.user = null;
+    })
+    .addCase(logoutAction, (state) => {
+      state.authorizationStatus = 'NO_AUTH';
+      state.user = null;
+      localStorage.removeItem('six-cities-token');
     });
 });
 

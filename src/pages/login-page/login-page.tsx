@@ -1,22 +1,40 @@
-import { FormEvent, useState, useCallback } from 'react';
+import { FormEvent, useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, Navigate } from 'react-router-dom';
-import { loginAction } from '../../store/thunk';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { loginAction, fetchFavoriteOffersAction } from '../../store/thunk/thunk';
+import { changeCity } from '../../store/action';
 import { AppDispatch } from '../../store';
 import { selectAuthorizationStatus } from '../../store/selectors';
+import { CITIES } from '../../constants/constants';
 
 function LoginPage(): JSX.Element {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [randomCity] = useState(() => CITIES[Math.floor(Math.random() * CITIES.length)]);
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const authorizationStatus = useSelector(selectAuthorizationStatus);
+
+  const validatePassword = (pwd: string): boolean => /[a-zA-Z]/.test(pwd) && /[0-9]/.test(pwd);
 
   const handleSubmit = useCallback((evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
-    if (email.trim() && password.trim()) {
+    if (email.trim() && password.trim() && validatePassword(password)) {
       dispatch(loginAction({ email: email.trim(), password }));
     }
   }, [email, password, dispatch]);
+
+  const handleRandomCityClick = useCallback((evt: React.MouseEvent<HTMLAnchorElement>) => {
+    evt.preventDefault();
+    dispatch(changeCity(randomCity));
+    navigate('/');
+  }, [dispatch, navigate, randomCity]);
+
+  useEffect(() => {
+    if (authorizationStatus === 'AUTH') {
+      dispatch(fetchFavoriteOffersAction());
+    }
+  }, [authorizationStatus, dispatch]);
 
   if (authorizationStatus === 'AUTH') {
     return <Navigate to="/" />;
@@ -61,6 +79,8 @@ function LoginPage(): JSX.Element {
                   name="password"
                   placeholder="Password"
                   required
+                  pattern="(?=.*[a-zA-Z])(?=.*[0-9]).*"
+                  title="Password must contain at least one letter and one number"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -70,8 +90,8 @@ function LoginPage(): JSX.Element {
           </section>
           <section className="locations locations--login locations--current">
             <div className="locations__item">
-              <a className="locations__item-link" href="#">
-                <span>Amsterdam</span>
+              <a className="locations__item-link" href="#" onClick={handleRandomCityClick}>
+                <span>{randomCity}</span>
               </a>
             </div>
           </section>

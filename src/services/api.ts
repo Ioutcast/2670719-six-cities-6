@@ -25,7 +25,6 @@ export const createAPI = () => {
     (response) => response,
     (error: AxiosError) => {
       if (error.response?.status === UNAUTHORIZED_STATUS_CODE) {
-        // Обработка 401 - неавторизован
         localStorage.removeItem(TOKEN_KEY_NAME);
       }
       return Promise.reject(error);

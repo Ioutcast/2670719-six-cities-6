@@ -1,5 +1,6 @@
 import { createReducer } from '@reduxjs/toolkit';
-import { fetchFavoriteOffersAction, toggleFavoriteAction } from '../thunk';
+import { logoutAction } from '../action';
+import { fetchFavoriteOffersAction, toggleFavoriteAction } from '../thunk/thunk';
 import type { Offer } from '../../types/offer';
 
 type FavoritesState = {
@@ -33,6 +34,9 @@ export const favoritesReducer = createReducer(initialState, (builder) => {
       } else {
         state.favoriteOffers = state.favoriteOffers.filter((offer) => offer.id !== action.payload.id);
       }
+    })
+    .addCase(logoutAction, (state) => {
+      state.favoriteOffers = [];
     });
 });
 
