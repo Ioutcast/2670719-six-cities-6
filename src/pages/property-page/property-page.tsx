@@ -65,7 +65,7 @@ function PropertyPage(): JSX.Element {
     }
   }, [id, dispatch]);
 
-  if (isOfferLoading) {
+  if (isOfferLoading || (id && currentOffer?.id !== id)) {
     return (
       <div className="page">
         <Spinner />

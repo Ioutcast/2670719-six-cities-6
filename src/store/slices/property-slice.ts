@@ -1,5 +1,6 @@
 import { createReducer } from '@reduxjs/toolkit';
-import { fetchOfferAction, fetchNearbyOffersAction, fetchReviewsAction, postReviewAction, toggleFavoriteAction } from '../thunk';
+import { logoutAction } from '../action';
+import { fetchOfferAction, fetchNearbyOffersAction, fetchReviewsAction, postReviewAction, toggleFavoriteAction, fetchFavoriteOffersAction } from '../thunk';
 import type { Offer } from '../../types/offer';
 import type { Review } from '../../types/review';
 
@@ -21,7 +22,11 @@ const initialState: PropertyState = {
 
 export const propertyReducer = createReducer(initialState, (builder) => {
   builder
-    .addCase(fetchOfferAction.pending, (state) => {
+    .addCase(fetchOfferAction.pending, (state, action) => {
+      const requestedId = action.meta.arg;
+      if (state.currentOffer?.id !== requestedId) {
+        state.currentOffer = null;
+      }
       state.isOfferLoading = true;
     })
     .addCase(fetchOfferAction.fulfilled, (state, action) => {
@@ -56,6 +61,31 @@ export const propertyReducer = createReducer(initialState, (builder) => {
       if (nearbyIndex !== -1) {
         state.nearbyOffers[nearbyIndex] = action.payload;
       }
+    })
+    .addCase(fetchFavoriteOffersAction.fulfilled, (state, action) => {
+      const favoriteIds = new Set(action.payload.map((offer) => offer.id));
+      if (state.currentOffer) {
+        state.currentOffer = {
+          ...state.currentOffer,
+          isFavorite: favoriteIds.has(state.currentOffer.id),
+        };
+      }
+      state.nearbyOffers = state.nearbyOffers.map((offer) => ({
+        ...offer,
+        isFavorite: favoriteIds.has(offer.id),
+      }));
+    })
+    .addCase(logoutAction, (state) => {
+      if (state.currentOffer) {
+        state.currentOffer = {
+          ...state.currentOffer,
+          isFavorite: false,
+        };
+      }
+      state.nearbyOffers = state.nearbyOffers.map((offer) => ({
+        ...offer,
+        isFavorite: false,
+      }));
     });
 });
 

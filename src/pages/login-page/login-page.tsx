@@ -1,7 +1,7 @@
-import { FormEvent, useState, useCallback } from 'react';
+import { FormEvent, useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { loginAction } from '../../store/thunk';
+import { loginAction, fetchFavoriteOffersAction } from '../../store/thunk';
 import { changeCity } from '../../store/action';
 import { AppDispatch } from '../../store';
 import { selectAuthorizationStatus } from '../../store/selectors';
@@ -29,6 +29,12 @@ function LoginPage(): JSX.Element {
     dispatch(changeCity(randomCity));
     navigate('/');
   }, [dispatch, navigate, randomCity]);
+
+  useEffect(() => {
+    if (authorizationStatus === 'AUTH') {
+      dispatch(fetchFavoriteOffersAction());
+    }
+  }, [authorizationStatus, dispatch]);
 
   if (authorizationStatus === 'AUTH') {
     return <Navigate to="/" />;
