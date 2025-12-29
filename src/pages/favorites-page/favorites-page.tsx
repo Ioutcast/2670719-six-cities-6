@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { logoutAction } from '../../store/action';
 import { fetchFavoriteOffersAction, toggleFavoriteAction } from '../../store/thunk';
 import { AppDispatch } from '../../store';
 import { selectFavoriteOffers, selectIsFavoritesLoading, selectAuthorizationStatus, selectUser } from '../../store/selectors';
@@ -10,6 +11,7 @@ import { RATING_WIDTH_MULTIPLIER } from '../../constants/constants';
 
 function FavoritesPage(): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const offers = useSelector(selectFavoriteOffers);
   const isLoading = useSelector(selectIsFavoritesLoading);
   const authorizationStatus = useSelector(selectAuthorizationStatus);
@@ -24,6 +26,12 @@ function FavoritesPage(): JSX.Element {
   const handleFavoriteClick = useCallback((offerId: string, isFavorite: boolean) => {
     dispatch(toggleFavoriteAction({ offerId, isFavorite }));
   }, [dispatch]);
+
+  const handleLogout = useCallback((evt: React.MouseEvent<HTMLAnchorElement>) => {
+    evt.preventDefault();
+    dispatch(logoutAction());
+    navigate('/');
+  }, [dispatch, navigate]);
   if (isLoading) {
     return (
       <div className="page">
@@ -62,7 +70,7 @@ function FavoritesPage(): JSX.Element {
                   </Link>
                 </li>
                 <li className="header__nav-item">
-                  <a className="header__nav-link" href="#">
+                  <a className="header__nav-link" href="#" onClick={handleLogout}>
                     <span className="header__signout">Sign out</span>
                   </a>
                 </li>

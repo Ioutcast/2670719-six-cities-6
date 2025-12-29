@@ -61,7 +61,7 @@ const NearbyOfferCard = memo(({offer}: NearbyOfferCardProps): JSX.Element => {
         </div>
         <div className="place-card__rating rating">
           <div className="place-card__stars rating__stars">
-            <span style={{width: `${offer.rating * RATING_WIDTH_MULTIPLIER}%`}}></span>
+            <span style={{width: `${Math.round(offer.rating) * RATING_WIDTH_MULTIPLIER}%`}}></span>
             <span className="visually-hidden">Rating</span>
           </div>
         </div>

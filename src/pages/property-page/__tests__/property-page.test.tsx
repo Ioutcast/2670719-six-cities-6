@@ -198,7 +198,7 @@ describe('PropertyPage', () => {
         </MemoryRouter>
       </Provider>
     );
-    expect(screen.getByText('apartment')).toBeInTheDocument();
+    expect(screen.getByText('Apartment')).toBeInTheDocument();
     expect(screen.getByText('2 Bedrooms')).toBeInTheDocument();
     expect(screen.getByText('Max 4 adults')).toBeInTheDocument();
   });

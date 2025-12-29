@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logoutAction } from '../../store/action';
+import { AppDispatch } from '../../store';
 import CitiesList from '../../components/cities-list/cities-list';
 import {
   selectCity,
@@ -9,10 +11,18 @@ import {
 } from '../../store/selectors';
 
 function MainEmptyPage(): JSX.Element {
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const currentCity = useSelector(selectCity);
   const authorizationStatus = useSelector(selectAuthorizationStatus);
   const user = useSelector(selectUser);
   const favoriteOffers = useSelector(selectFavoriteOffers);
+
+  const handleLogout = (evt: React.MouseEvent<HTMLAnchorElement>) => {
+    evt.preventDefault();
+    dispatch(logoutAction());
+    navigate('/');
+  };
 
   return (
     <div className="page page--gray page--main">
@@ -37,7 +47,7 @@ function MainEmptyPage(): JSX.Element {
                       </Link>
                     </li>
                     <li className="header__nav-item">
-                      <a className="header__nav-link" href="#">
+                      <a className="header__nav-link" href="#" onClick={handleLogout}>
                         <span className="header__signout">Sign out</span>
                       </a>
                     </li>

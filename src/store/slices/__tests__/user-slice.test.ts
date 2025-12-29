@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { userReducer } from '../user-slice';
-import { requireAuthorization } from '../../action';
+import { requireAuthorization, logoutAction } from '../../action';
 import { checkAuthAction, loginAction } from '../../thunk';
 import type { AuthInfo } from '../../../types/auth';
 
@@ -52,11 +52,22 @@ describe('userReducer', () => {
 
   it('should set NO_AUTH status and null user when loginAction is rejected', () => {
     const state = userReducer(
-      { authorizationStatus: 'UNKNOWN', user: null },
-      loginAction.rejected(new Error(), '', { email: 'test@test.com', password: 'password' }, 'Error')
+      { authorizationStatus: 'AUTH', user: { email: 'test@test.com' } },
+      loginAction.rejected(new Error(), '', { email: 'test@test.com', password: 'password' }, 'error')
     );
     expect(state.authorizationStatus).toBe('NO_AUTH');
     expect(state.user).toBeNull();
+  });
+
+  it('should logout user and remove token from localStorage', () => {
+    localStorage.setItem('six-cities-token', 'test-token');
+    const state = userReducer(
+      { authorizationStatus: 'AUTH', user: { email: 'test@test.com' } },
+      logoutAction()
+    );
+    expect(state.authorizationStatus).toBe('NO_AUTH');
+    expect(state.user).toBeNull();
+    expect(localStorage.getItem('six-cities-token')).toBeNull();
   });
 });
 

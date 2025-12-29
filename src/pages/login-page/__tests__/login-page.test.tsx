@@ -197,5 +197,105 @@ describe('LoginPage', () => {
     const logoLink = screen.getByAltText('6 cities logo').closest('a');
     expect(logoLink).toHaveAttribute('href', '/');
   });
+
+  it('should not dispatch loginAction when password does not contain letter', async () => {
+    const user = userEvent.setup();
+    const store = createMockStore();
+    const dispatchSpy = vi.spyOn(store, 'dispatch');
+    render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <LoginPage />
+        </BrowserRouter>
+      </Provider>
+    );
+    const emailInput = screen.getByPlaceholderText('Email');
+    const passwordInput = screen.getByPlaceholderText('Password');
+    const submitButton = screen.getByRole('button', { name: 'Sign in' });
+
+    await user.type(emailInput, 'test@test.com');
+    await user.type(passwordInput, '123456');
+    await user.click(submitButton);
+
+    const loginCalls = dispatchSpy.mock.calls.filter(
+      (call) => 'type' in call[0] && call[0].type === 'user/login/pending'
+    );
+    expect(loginCalls.length).toBe(0);
+  });
+
+  it('should not dispatch loginAction when password does not contain number', async () => {
+    const user = userEvent.setup();
+    const store = createMockStore();
+    const dispatchSpy = vi.spyOn(store, 'dispatch');
+    render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <LoginPage />
+        </BrowserRouter>
+      </Provider>
+    );
+    const emailInput = screen.getByPlaceholderText('Email');
+    const passwordInput = screen.getByPlaceholderText('Password');
+    const submitButton = screen.getByRole('button', { name: 'Sign in' });
+
+    await user.type(emailInput, 'test@test.com');
+    await user.type(passwordInput, 'password');
+    await user.click(submitButton);
+
+    const loginCalls = dispatchSpy.mock.calls.filter(
+      (call) => 'type' in call[0] && call[0].type === 'user/login/pending'
+    );
+    expect(loginCalls.length).toBe(0);
+  });
+
+  it('should dispatch loginAction when password contains both letter and number', async () => {
+    const user = userEvent.setup();
+    const store = createMockStore();
+    const dispatchSpy = vi.spyOn(store, 'dispatch');
+    render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <LoginPage />
+        </BrowserRouter>
+      </Provider>
+    );
+    const emailInput = screen.getByPlaceholderText('Email');
+    const passwordInput = screen.getByPlaceholderText('Password');
+    const submitButton = screen.getByRole('button', { name: 'Sign in' });
+
+    await user.type(emailInput, 'test@test.com');
+    await user.type(passwordInput, 'password123');
+    await user.click(submitButton);
+
+    expect(dispatchSpy).toHaveBeenCalled();
+    const calls = dispatchSpy.mock.calls;
+    const loginCall = calls.find((call) =>
+      typeof call[0] === 'function' ||
+      (call[0] && 'type' in call[0] && String(call[0].type)?.includes('login'))
+    );
+    expect(loginCall).toBeDefined();
+  });
+
+  it('should render random city link and navigate on click', async () => {
+    const user = userEvent.setup();
+    const store = createMockStore();
+    const dispatchSpy = vi.spyOn(store, 'dispatch');
+    render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <LoginPage />
+        </BrowserRouter>
+      </Provider>
+    );
+    const cityLink = screen.getByText(/Paris|Cologne|Brussels|Amsterdam|Hamburg|Dusseldorf/);
+    expect(cityLink).toBeInTheDocument();
+
+    await user.click(cityLink);
+    expect(dispatchSpy).toHaveBeenCalled();
+    const changeCityCall = dispatchSpy.mock.calls.find((call) =>
+      call[0] && 'type' in call[0] && call[0].type === 'city/changeCity'
+    );
+    expect(changeCityCall).toBeDefined();
+  });
 });
 
