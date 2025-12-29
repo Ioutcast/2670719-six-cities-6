@@ -4,9 +4,15 @@ import Map from '../map';
 import type { Offer } from '../../../types/offer';
 import leaflet from 'leaflet';
 
+// Create mock instances that will be returned by the mocks
+type MockMapInstance = {
+  setView: ReturnType<typeof vi.fn>;
+  remove: ReturnType<typeof vi.fn>;
+};
+
 // Mock leaflet
 vi.mock('leaflet', () => {
-  const mockMapInstance = {
+  const mockMapInstance: MockMapInstance = {
     setView: vi.fn(),
     remove: vi.fn(),
   };
@@ -20,7 +26,7 @@ vi.mock('leaflet', () => {
     addTo: vi.fn().mockReturnThis(),
   };
 
-  const mockMapFn = vi.fn(() => mockMapInstance);
+  const mockMapFn = vi.fn<[], MockMapInstance>(() => mockMapInstance);
   const mockMarkerFn = vi.fn(() => mockMarkerInstance);
   const mockIconFn = vi.fn(() => ({}));
   const mockTileLayerFn = vi.fn(() => mockTileLayerInstance);
@@ -149,9 +155,12 @@ describe('Map', () => {
     );
     unmount();
     const mockedLeaflet = vi.mocked(leaflet);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const mapInstance = mockedLeaflet.map.mock.results[0]?.value as { remove: ReturnType<typeof vi.fn> } | undefined;
-    expect(mapInstance?.remove).toHaveBeenCalled();
+    const mapMock = mockedLeaflet.map as ReturnType<typeof vi.fn<[], MockMapInstance>>;
+    const firstCall = mapMock.mock.results[0];
+    if (firstCall && 'value' in firstCall) {
+      const mapInstance = firstCall.value as MockMapInstance;
+      expect(mapInstance.remove).toHaveBeenCalled();
+    }
   });
 });
 
